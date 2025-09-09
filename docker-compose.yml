@@ -1,0 +1,28 @@
+version: "3.9"
+services:
+  mongo:
+    image: mongo:6
+    ports: [ "27017:27017" ]
+    volumes: [ "mongo_data:/data/db" ]
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.adminCommand(\"ping\").ok' | grep 1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+  server:
+    build: ./
+    environment:
+      MONGO_URI: mongodb://mongo:27017/superteam
+      JWT_SECRET: super-secret-change-me
+      SUPERHERO_API_TOKEN: ${SUPERHERO_API_TOKEN}
+      CLIENT_ORIGIN: http://localhost:5173,http://localhost
+      NODE_ENV: production
+      PORT: 5000
+    ports: [ "5000:5000" ]
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: unless-stopped
+volumes:
+  mongo_data:
