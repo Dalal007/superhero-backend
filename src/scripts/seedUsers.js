@@ -1,6 +1,7 @@
 import "dotenv/config";
 import User from "../models/User.js";
 import { connectDB } from "../lib/db.js";
+import logger from "../lib/logger.js";
 
 (async () => {
   await connectDB();
@@ -17,9 +18,9 @@ import { connectDB } from "../lib/db.js";
     });
     
     await adminUser.save();
-    console.log("Admin user created successfully");
+    logger.info("Admin user created successfully");
   } else {
-    console.log("Admin user already exists");
+    logger.info("Admin user already exists");
   }
   
   process.exit(0);

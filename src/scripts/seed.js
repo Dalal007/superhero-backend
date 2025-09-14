@@ -2,6 +2,7 @@ import "dotenv/config";
 import axios from "axios";
 import Hero from "../models/Hero.js";
 import { connectDB } from "../lib/db.js";
+import logger from "../lib/logger.js";
 
 const BASE = `https://superheroapi.com/api/${process.env.SUPERHERO_API_TOKEN}`;
 
@@ -57,6 +58,6 @@ async function fetchHero(id) {
   }
   await Hero.deleteMany({});
   await Hero.insertMany(docs);
-  console.log(`Seeded ${docs.length} heroes`);
+  logger.info(`Seeded ${docs.length} heroes`);
   process.exit(0);
 })();

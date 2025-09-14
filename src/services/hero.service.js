@@ -1,27 +1,37 @@
 import { heroRepository } from "../repositories/hero.repository.js";
 import { appCache } from "../lib/cache.js";
+import logger from "../lib/logger.js";
 
 export const heroService = {
   async list({ q, page = 1, limit = 20 }) {
+    logger.debug(`Hero list service - Query: ${q || 'none'}, Page: ${page}, Limit: ${limit}`);
     const filter = q ? { name: new RegExp(q, "i") } : {};
     const [items, total] = await Promise.all([
       heroRepository.find(filter, { sort: { name: 1 }, skip: (page - 1) * limit, limit }),
       heroRepository.count(filter),
     ]);
+    logger.debug(`Hero list service returned ${items.length} items out of ${total} total`);
     return { items, total };
   },
 
   async getById(id) {
     const key = `hero:${id}`;
     const cached = appCache.get(key);
-    if (cached) return cached;
+    if (cached) {
+      logger.debug(`Hero cache hit for ID: ${id}`);
+      return cached;
+    }
+    logger.debug(`Hero cache miss for ID: ${id}, fetching from database`);
     const hero = await heroRepository.findById(id);
-    if (hero) appCache.set(key, hero);
+    if (hero) {
+      appCache.set(key, hero);
+      logger.debug(`Hero cached for ID: ${id}`);
+    }
     return hero;
   },
 
   async update(id, updates, userId) {
-    console.log("Hero service update called with:", { id, updates, userId });
+    logger.debug(`Hero update service - ID: ${id}, User: ${userId}, Updates: ${Object.keys(updates).join(', ')}`);
     
     const allowed = ["name", "powerstats", "biography", "appearance", "work", "connections", "imageUrl"];
     
@@ -32,8 +42,6 @@ export const heroService = {
         filteredUpdates[k] = updates[k];
       }
     }
-    
-    console.log("Filtered updates:", filteredUpdates);
     
     // Validate powerstats if provided
     if (filteredUpdates.powerstats) {
@@ -65,16 +73,15 @@ export const heroService = {
     filteredUpdates.lastUpdatedBy = userId;
     filteredUpdates.lastUpdatedAt = new Date();
     
-    console.log("Final updates to save:", filteredUpdates);
-    
     // Update the hero and invalidate cache
     const updatedHero = await heroRepository.updateById(id, filteredUpdates);
     
     // Invalidate cache for this hero
     const key = `hero:${id}`;
     appCache.del(key);
+    logger.debug(`Hero cache invalidated for ID: ${id}`);
     
-    console.log("Hero updated successfully:", updatedHero);
+    logger.info(`Hero updated successfully - ID: ${id}, Name: ${updatedHero?.name}`);
     return updatedHero;
   },
 };
