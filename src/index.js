@@ -5,10 +5,12 @@ import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import { connectDB } from "./lib/db.js";
+import logger from "./lib/logger.js";
 import authRoutes from "./routes/auth.routes.js";
 import heroRoutes from "./routes/hero.routes.js";
 import teamRoutes from "./routes/team.routes.js";
 import favoriteRoutes from "./routes/favorite.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
 
 const app = express();
 
@@ -27,8 +29,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/heroes", heroRoutes);
 app.use("/api/teams", teamRoutes);
 app.use("/api/favorites", favoriteRoutes);
+app.use("/api/admin", adminRoutes);
 
 // --- Start
 await connectDB();
 const port = process.env.PORT || 5000;
-app.listen(port, () => console.log(`API listening on :${port}`));
+app.listen(port, () => logger.info(`API listening on :${port}`));
