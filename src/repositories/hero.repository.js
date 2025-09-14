@@ -11,11 +11,11 @@ export const heroRepository = {
   },
 
   async findById(id) {
-    return Hero.findById(id);
+    return Hero.findById(id).populate('lastUpdatedBy', 'name email');
   },
 
   async updateById(id, updates) {
-    return Hero.findByIdAndUpdate(id, updates, { new: true });
+    return Hero.findByIdAndUpdate(id, updates, { new: true }).populate('lastUpdatedBy', 'name email');
   },
 
   async findManyByIds(ids) {

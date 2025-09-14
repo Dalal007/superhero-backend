@@ -14,15 +14,24 @@ services:
     build: ./
     environment:
       MONGO_URI: mongodb://mongo:27017/superteam
-      JWT_SECRET: super-secret-change-me
+      JWT_SECRET: ${JWT_SECRET:-EJSMnj8K2HfU4V3UF5js1a7Qw3VCOX9o3rlWQJQE90ffeJG09xSaIsy6KW8wSimS}
       SUPERHERO_API_TOKEN: ${SUPERHERO_API_TOKEN}
-      CLIENT_ORIGIN: http://localhost:5173,http://localhost
-      NODE_ENV: production
-      PORT: 5000
+      CLIENT_ORIGIN: ${CLIENT_ORIGIN:-http://localhost:5173,http://localhost}
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-5000}
     ports: [ "5000:5000" ]
     depends_on:
       mongo:
         condition: service_healthy
     restart: unless-stopped
+    command: >
+      sh -c "
+        echo 'Waiting for MongoDB to be ready...' &&
+        sleep 10 &&
+        echo 'Seeding users...' &&
+        node src/scripts/seedUsers.js &&
+        echo 'Starting server...' &&
+        npm start
+      "
 volumes:
   mongo_data:

@@ -9,6 +9,7 @@ import authRoutes from "./routes/auth.routes.js";
 import heroRoutes from "./routes/hero.routes.js";
 import teamRoutes from "./routes/team.routes.js";
 import favoriteRoutes from "./routes/favorite.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/heroes", heroRoutes);
 app.use("/api/teams", teamRoutes);
 app.use("/api/favorites", favoriteRoutes);
+app.use("/api/admin", adminRoutes);
 
 // --- Start
 await connectDB();

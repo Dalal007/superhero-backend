@@ -44,7 +44,7 @@ async function fetchHero(id) {
 
 (async () => {
   await connectDB();
-  const count = Number(process.env.SEED_HERO_COUNT || 50);
+  const count = Number(process.env.SEED_HERO_COUNT || 60);
   const ids = Array.from({ length: count }, (_, i) => i + 1); // first N heroes
   const docs = [];
   for (const id of ids) {

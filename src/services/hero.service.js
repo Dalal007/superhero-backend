@@ -20,12 +20,62 @@ export const heroService = {
     return hero;
   },
 
-  async update(id, updates) {
+  async update(id, updates, userId) {
+    console.log("Hero service update called with:", { id, updates, userId });
+    
     const allowed = ["name", "powerstats", "biography", "appearance", "work", "connections", "imageUrl"];
+    
+    // Filter allowed fields
+    const filteredUpdates = {};
     for (const k of Object.keys(updates)) {
-      if (!allowed.includes(k)) delete updates[k];
+      if (allowed.includes(k)) {
+        filteredUpdates[k] = updates[k];
+      }
     }
-    return heroRepository.updateById(id, updates);
+    
+    console.log("Filtered updates:", filteredUpdates);
+    
+    // Validate powerstats if provided
+    if (filteredUpdates.powerstats) {
+      const powerstats = filteredUpdates.powerstats;
+      const validStats = ["intelligence", "strength", "speed", "durability", "power", "combat"];
+      
+      for (const [key, value] of Object.entries(powerstats)) {
+        if (validStats.includes(key)) {
+          const numValue = parseInt(value);
+          if (isNaN(numValue) || numValue < 0 || numValue > 100) {
+            throw new Error(`Invalid powerstat value for ${key}: must be between 0 and 100`);
+          }
+          filteredUpdates.powerstats[key] = numValue;
+        }
+      }
+    }
+    
+    // Validate name if provided
+    if (filteredUpdates.name && (!filteredUpdates.name.trim() || filteredUpdates.name.length > 100)) {
+      throw new Error("Name must be between 1 and 100 characters");
+    }
+    
+    // Validate imageUrl if provided
+    if (filteredUpdates.imageUrl && filteredUpdates.imageUrl.length > 500) {
+      throw new Error("Image URL must be less than 500 characters");
+    }
+    
+    // Add last updated fields
+    filteredUpdates.lastUpdatedBy = userId;
+    filteredUpdates.lastUpdatedAt = new Date();
+    
+    console.log("Final updates to save:", filteredUpdates);
+    
+    // Update the hero and invalidate cache
+    const updatedHero = await heroRepository.updateById(id, filteredUpdates);
+    
+    // Invalidate cache for this hero
+    const key = `hero:${id}`;
+    appCache.del(key);
+    
+    console.log("Hero updated successfully:", updatedHero);
+    return updatedHero;
   },
 };
 

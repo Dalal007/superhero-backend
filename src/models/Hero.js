@@ -56,6 +56,8 @@ const heroSchema = new mongoose.Schema(
     work: workSchema,
     connections: connectionsSchema,
     imageUrl: String,
+    lastUpdatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    lastUpdatedAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );
