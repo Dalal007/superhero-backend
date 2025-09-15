@@ -69,3 +69,19 @@ export function compareTeams(teamA, teamB) {
     } has higher aggregate stats.`,
   };
 }
+
+export function budgetTeams(team) {
+  const BUDGET_FIELDS = [
+    "intelligence",
+    "strength",
+    "speed",
+    "durability",
+    "power",
+    "combat",
+  ];
+
+  // Utility function to calculate hero budget
+  return function calculateBudget(hero) {
+    return BUDGET_FIELDS.reduce((sum, field) => sum + (hero[field] || 0), 0);
+  };
+}

@@ -1,5 +1,6 @@
 import { heroService } from "../services/hero.service.js";
 import logger from "../lib/logger.js";
+import { budgetTeams } from "../lib/recommend.js";
 
 export async function listHeroes(req, res) {
   try {
@@ -8,6 +9,22 @@ export async function listHeroes(req, res) {
     const data = await heroService.list({ q, page: Number(page), limit: Number(limit) });
     logger.info(`Heroes list returned ${data.items.length} heroes out of ${data.total} total`);
     res.json(data);
+  } catch (error) {
+    logger.error("Error fetching heroes list", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export async function getBudgetHeros(req, res) {
+  try {
+    // const { q, type=budget, budget = 100, size = 4 } = req.query;
+    const data = await listHeroes(req, res);
+    console.log("data", data?.items);
+    const budgetVal = parseInt(budget, 10) || 0;
+    const sizeVal = parseInt(size, 10) || 5;
+    let filtered = heroes.filter((hero) => budgetTeams(hero) >= budgetVal);
+    console.log("filtered==>", filtered)
+    filtered = filtered.slice(0, sizeVal);
   } catch (error) {
     logger.error("Error fetching heroes list", error.message);
     res.status(500).json({ message: "Internal server error" });
